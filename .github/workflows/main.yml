@@ -1,0 +1,37 @@
+name: Automatic Daily Commit
+
+on:
+  # Настройка расписания запуска.
+  # cron: '0 0 * * *' означает "каждый день в полночь (00:00) по UTC"
+  schedule:
+    - cron: '0 0 * * *' 
+
+  # Это позволяет запустить вручную, если нужно проверить
+  workflow_dispatch:
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Клонируем репозиторий
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Создаем или обновляем файл
+      - name: Create or Update File
+        run: |
+          # Генерируем текущую дату и время для уникальности коммита
+          DATE=$(date +%Y-%m-%d_%H-%M-%S)
+          FILE="auto_commit_log.txt"
+
+          # Добавляем новую строку с датой в файл
+          echo "Automated commit run at: $DATE" >> "$FILE"
+
+          # 3. Настраиваем данные пользователя
+          git config --global user.name "lenam7700" 
+          git config --global user.email "lenam7700@gmail.com" 
+
+          # 4. Добавляем изменения, делаем коммит и пушим
+          git add "$FILE"
+          git commit -m "Automated daily update: $DATE" || echo "No changes to commit"
+          git push
